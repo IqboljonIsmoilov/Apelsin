@@ -30,6 +30,8 @@ public class AuthService {
 
     private final AttachService attachService;
 
+    private final SmsService smsService;
+
 
     public ProfileDTO login(AuthDTO dto) {
         String pswd = DigestUtils.md5Hex(dto.getPassword());

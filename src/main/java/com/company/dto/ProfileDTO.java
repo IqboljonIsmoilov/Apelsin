@@ -29,8 +29,6 @@ public class ProfileDTO extends TimeAndIdDTO {
 
     private AttachDTO photo;
 
-    
-
     private String url;
 
     public ProfileDTO() {
