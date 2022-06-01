@@ -5,26 +5,26 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "attach")
-public class AttachEntity {
+@Getter
+@Setter
+public class AttachEntity extends BaseEntity {
 
-    @Id
-    private String id;
-    @Column(name = "origen_name")
-    private String origenName;
-    @Column
-    private Long size;
-    @Column
-    private String type;
-    @Column
+    @Column(nullable = false)
     private String path;
+
+    @Column(nullable = false)
+    private String extension;
+
+    @Column(name = "original_name", nullable = false)
+    private String originalName;
+
+    @Column(name = "file_size", nullable = false)
+    private Long fileSize;
+
     @Column
-    private LocalDateTime createdDate;
+    private Long duration;
 }

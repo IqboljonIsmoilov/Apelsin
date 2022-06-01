@@ -13,11 +13,11 @@ public class JwtUtil {
     private final static String secretKey = "kalitso'z";
 
     public static String encode(Integer id, ProfileRole role) {
-        return doEncode(id, role, 10);
+        return doEncode(id, role, 60);
     }
 
     public static String encode(Integer id) {
-        return doEncode(id, null, 5);
+        return doEncode(id, null, 30);
     }
 
     public static String doEncode(Integer id, ProfileRole role, long minute) {
@@ -26,7 +26,7 @@ public class JwtUtil {
         jwtBuilder.setIssuedAt(new Date());
         jwtBuilder.signWith(SignatureAlgorithm.HS256, secretKey);
         jwtBuilder.setExpiration(new Date(System.currentTimeMillis() + (minute * 60 * 1000)));
-        jwtBuilder.setIssuer("production");
+        jwtBuilder.setIssuer("mazgi production");
 
         if (role != null) {
             jwtBuilder.claim("role", role);
@@ -61,21 +61,21 @@ public class JwtUtil {
         return Integer.parseInt(id);
     }
 
-    public static String getIdFromHeader(HttpServletRequest request, ProfileRole... requiredRoles) {
+    public static Integer getIdFromHeader(HttpServletRequest request, ProfileRole... requiredRoles) {
         try {
             ProfileJwtDTO dto = (ProfileJwtDTO) request.getAttribute("profileJwtDto");
             if (requiredRoles == null || requiredRoles.length == 0) {
-                return dto.getId().toString();
+                return dto.getId();
             }
             for (ProfileRole role : requiredRoles) {
                 if (role.equals(dto.getRole())) {
-                    return dto.getId().toString();
+                    return dto.getId();
                 }
             }
         } catch (RuntimeException e) {
             throw new TokenNotValidException("Not Authorized");
         }
-        throw new AppForbiddenException("Not Access2");
+        throw new AppForbiddenException("Not Access MODERATOR");
     }
 
     public static ProfileJwtDTO getProfileFromHeader(HttpServletRequest request, ProfileRole... requiredRoles) {

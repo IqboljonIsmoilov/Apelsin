@@ -1,108 +1,89 @@
 package com.company.service;
 
-import com.company.dto.AuthDTO;
-import com.company.dto.ProfileDTO;
-import com.company.dto.RegistrationDTO;
+import com.company.dto.RegistrationDto;
+import com.company.dto.SmsDTO;
 import com.company.entity.ProfileEntity;
+import com.company.entity.SmsEntity;
 import com.company.enums.ProfileRole;
 import com.company.enums.ProfileStatus;
+import com.company.enums.SmsStatus;
 import com.company.exception.AppBadRequestException;
-import com.company.exception.AppForbiddenException;
-import com.company.exception.EmailAlreadyExistsException;
-import com.company.exception.PasswordOrEmailWrongException;
+import com.company.exception.ItemAlreadyExistsException;
 import com.company.repository.ProfileRepository;
-import com.company.util.JwtUtil;
-import io.jsonwebtoken.JwtException;
+import com.company.repository.SmsRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.codec.digest.DigestUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
-@RequiredArgsConstructor
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final ProfileRepository profileRepository;
 
-   // private final EmailService emailService;
-
     private final AttachService attachService;
+
+    private final ProfileService profileService;
+
+    private final SmsRepository smsRepository;
 
     private final SmsService smsService;
 
-
-    public ProfileDTO login(AuthDTO dto) {
-        String pswd = DigestUtils.md5Hex(dto.getPassword());
-        Optional<ProfileEntity> optional =
-                profileRepository.findByEmailAndPassword(dto.getEmail(), pswd);
-        if (optional.isEmpty()) {
-            throw new PasswordOrEmailWrongException("Password or email wrong!");
+    public void registration(RegistrationDto dto) {
+        Optional<ProfileEntity> optional = profileRepository.findByPhone(dto.getPhone());
+        if (optional.isPresent()) {
+            log.warn("Phone already axists : {}", dto);
+            throw new ItemAlreadyExistsException("Phone already exists!");
         }
 
-        ProfileEntity entity = optional.get();
-        if (!entity.getStatus().equals(ProfileStatus.ACTIVE)) {
-            throw new AppForbiddenException("No Access");
+        ProfileEntity entity = toProfileEntity(dto);
+        try {
+            profileRepository.save(entity);
+            smsService.sendSms(dto.getPhone());
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Unique {}", dto);
+            throw new AppBadRequestException("Unique Items!");
         }
-        ProfileDTO profile = new ProfileDTO();
-
-        profile.setJwt(JwtUtil.encode(Integer.valueOf(entity.getId().toString()), entity.getRole()));
-        profile.setEmail(entity.getEmail());
-        profile.setName(entity.getName());
-        profile.setSurname(entity.getSurname());
-        profile.setRole(entity.getRole());
-
-        return profile;
     }
 
 
-    public String registration(RegistrationDTO dto) {
-
-        Optional<ProfileEntity> optional = profileRepository.findByEmail(dto.getEmail());
-        if (optional.isPresent()) {
-            throw new EmailAlreadyExistsException("Email Already Exits");
+    public Boolean activation(SmsDTO dto) {
+        ProfileEntity entity = profileService.getByPhone(dto.getPhone());
+        Optional<SmsEntity> optional = smsRepository
+                .findTopByPhoneAndStatusOrderByCreatedDateDesc(dto.getPhone(), SmsStatus.NOT_USED);
+        if (optional.isEmpty()) {
+            return false;
         }
 
+        SmsEntity smsEntity = optional.get();
+        if (!smsEntity.getContent().equals(dto.getSms())) {
+            smsRepository.updateSmsStatus(SmsStatus.INVALID, smsEntity.getId());
+            throw new AppBadRequestException("Code wrong");
+        }
+        LocalDateTime extTime = smsEntity.getCreatedDate().plusMinutes(2);
+        if (LocalDateTime.now().isAfter(extTime)) {
+            smsRepository.updateSmsStatus(SmsStatus.INVALID, smsEntity.getId());
+            throw new AppBadRequestException("Time is up");
+        }
+        smsRepository.updateSmsStatus(SmsStatus.USED, smsEntity.getId());
+
+        int n = profileRepository.activation(ProfileStatus.ACTIVE, dto.getPhone());
+        return n > 0;
+    }
+
+
+    public ProfileEntity toProfileEntity(RegistrationDto dto) {
         ProfileEntity entity = new ProfileEntity();
-        entity.setId(UUID.randomUUID().toString());
         entity.setName(dto.getName());
         entity.setSurname(dto.getSurname());
-        entity.setEmail(dto.getEmail());
-
-        String pswd = DigestUtils.md5Hex(dto.getPassword());
-        entity.setPassword(pswd);
-
+        entity.setPhone(dto.getPhone());
         entity.setRole(ProfileRole.USER);
         entity.setStatus(ProfileStatus.NOT_ACTIVE);
-        profileRepository.save(entity);
-
-        return "Chack your email";
+        return entity;
     }
-
-
-    public String verification(String jwt) {
-        Integer userId = null;
-        try {
-            userId = JwtUtil.decodeAndGetId(jwt);
-        } catch (JwtException e) {
-            throw new AppBadRequestException("Verification not completed");
-        }
-
-        profileRepository.updateStatus(ProfileStatus.ACTIVE, userId.toString());
-        return "";
-    }
-
-
-/*
-    private void sendVerificationEmail(ProfileEntity entity) {
-        StringBuilder builder = new StringBuilder();
-        String jwt = JwtUtil.encode(entity.getId());
-        builder.append("Salom \n");
-        builder.append("To verify your registration click to next link.");
-        builder.append("http://localhost:8080/auth/verification/").append(jwt);
-        builder.append("\nnimadur!");
-        emailService.send(entity.getEmail(), "Activate Your Registration", builder.toString());
-
-    }*/
 }

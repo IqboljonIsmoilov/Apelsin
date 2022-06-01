@@ -1,49 +1,43 @@
 package com.company.controller;
 
-import com.company.dto.AuthDTO;
-import com.company.dto.RegistrationDTO;
+import com.company.dto.RegistrationDto;
+import com.company.dto.SmsDTO;
 import com.company.service.AuthService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
-@RequiredArgsConstructor
+@Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/auth")
-@Api(tags = "Auth")
+@Api(tags = "For Authorization")
 public class AuthController {
 
-
     private final AuthService authService;
-    private Logger log = LoggerFactory.getLogger(AuthController.class);
 
-    @ApiOperation(value = "login", notes = "Mathod used for login and getting taken", nickname = "nickname")
-    @PostMapping("/login")
-    public ResponseEntity<?> auth(@RequestBody @Valid AuthDTO dto) {
-        log.info("Authorization: {}", dto);
-        return ResponseEntity.ok(authService.login(dto));
-    }
-
-
-    @ApiOperation(value = "registration", notes = "Mathod used for registration", nickname = "nickname")
+    @ApiOperation(value = "registration", notes = "Method for registration", nickname = "Mazgi")
     @PostMapping("/registration")
-    public ResponseEntity<?> registration(@RequestBody @Valid RegistrationDTO dto) {
-        log.info("Registration: {}", dto);
-        return ResponseEntity.ok(authService.registration(dto));
+    public ResponseEntity<?> registration(@RequestBody @Valid RegistrationDto dto) {
+        log.info("registration: {}", dto);
+        authService.registration(dto);
+        return ResponseEntity.ok().build();
     }
 
 
-    @ApiOperation(value = "verification", notes = "Mathod used for verification", nickname = "nickname")
-    @GetMapping("/verification/{jwt}")
-    public ResponseEntity<?> verification(@PathVariable("jwt") String jwt) {
-        log.info("Verification: {}", jwt);
-        authService.verification(jwt);
-        return ResponseEntity.ok().build();
+    @ApiOperation(value = "activation", notes = "Method for activation", nickname = "Mazgi")
+    @PostMapping("/activation")
+    public ResponseEntity<?> activisation(@RequestBody @Valid SmsDTO dto) {
+        log.info("registration: {}", dto);
+        return ResponseEntity.ok(authService.activation(dto));
     }
 }

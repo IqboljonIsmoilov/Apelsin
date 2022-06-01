@@ -1,4 +1,4 @@
-package com.company.dto;
+package com.company.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,10 +8,9 @@ import lombok.ToString;
 @Setter
 @ToString
 public class UserTestDTO {
-
-    private String id;
+    private Integer id;
     private String name;
     private String email;
-    private String garden;
+    private String gender;
     private String status;
 }
