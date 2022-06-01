@@ -14,6 +14,8 @@ import java.util.Optional;
 public interface ProfileRepository extends JpaRepository<ProfileEntity, String> {
     List<ProfileEntity> findAllByVisible(boolean b);
 
+    ProfileEntity findByPhoneAndPassword(String phone, String password);
+
     Optional<ProfileEntity> findByIdAndVisible(String id, boolean b);
 
     @Transactional

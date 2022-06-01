@@ -19,9 +19,17 @@ public class ProfileEntity extends BaseEntity {
     @Column
     private String phone;
     @Column
+    private String password;
+    @Column
     @Enumerated(EnumType.STRING)
     private ProfileStatus status;
     @Column
     @Enumerated(EnumType.STRING)
     private ProfileRole role;
+
+    @Column(name = "attach_id")
+    private String attachId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "attach_id", insertable = false, updatable = false)
+    private AttachEntity attach;
 }

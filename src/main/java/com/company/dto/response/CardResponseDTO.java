@@ -17,4 +17,5 @@ public class CardResponseDTO extends CardRequestDTO {
     private CardStatus status;
     private LocalDate expiryDate;
     private ProfileResponseDTO profile;
+    private String phone;
 }

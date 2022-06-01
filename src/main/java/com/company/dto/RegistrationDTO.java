@@ -11,7 +11,7 @@ import javax.validation.constraints.Size;
 @Setter
 @Getter
 @ToString
-public class RegistrationDto {
+public class RegistrationDTO {
     @NotNull
     @Size(min = 3, max = 25, message = "name requaried")
     private String name;
@@ -22,4 +22,7 @@ public class RegistrationDto {
     @NotBlank(message = "phone required")
     @Size(min = 12, max = 12, message = "phone requaired")
     private String phone;
+    @NotNull
+    @Size(min = 3, max = 25, message = "surname requaried")
+    private String password;
 }

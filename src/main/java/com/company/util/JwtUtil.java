@@ -12,15 +12,15 @@ import java.util.Date;
 public class JwtUtil {
     private final static String secretKey = "kalitso'z";
 
-    public static String encode(Integer id, ProfileRole role) {
+    public static String encode(String id, ProfileRole role) {
         return doEncode(id, role, 60);
     }
 
-    public static String encode(Integer id) {
+    public static String encode(String id) {
         return doEncode(id, null, 30);
     }
 
-    public static String doEncode(Integer id, ProfileRole role, long minute) {
+    public static String doEncode(String  id, ProfileRole role, long minute) {
         JwtBuilder jwtBuilder = Jwts.builder();
         jwtBuilder.setSubject(String.valueOf(id));
         jwtBuilder.setIssuedAt(new Date());

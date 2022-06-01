@@ -52,6 +52,10 @@ public class CategoryService {
         return n > 0;
     }
 
+    public CategoryEntity get(String categoryId){
+        return categoryRepository.findByIdAndVisible(categoryId, true).orElseThrow(() -> new ItemNotFoundException("Category Not Found"));
+    }
+
 
     private CategoryResponseDTO toDTO(CategoryEntity entity) {
         CategoryResponseDTO responseDTO = new CategoryResponseDTO();

@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -123,6 +124,10 @@ public class AttachService {
         }
     }
 
+    public String toOpenURL(String id) {
+        return domainName + "/attach/open_general/" + id;
+    }
+
 
     public Boolean delete(String id) {
         AttachEntity entity = getById(id);
@@ -138,6 +143,22 @@ public class AttachService {
             attachRepository.deleteById(entity.getId());
             throw new AppBadRequestException("Could not read the file!");
         }
+    }
+
+    public AttachResponseDTO toOpenURLDTO(String id) {
+        return new AttachResponseDTO(domainName + "/attach/open_general/" + id);
+    }
+
+
+    public AttachEntity get(String id) {
+
+        Optional<AttachEntity> optional =  attachRepository.findById(id);
+        if (optional.isEmpty()){
+            log.warn("Attach not found!: {}", id);
+            throw new ItemNotFoundException("Attach Not Found");
+        }
+
+        return optional.get();
     }
 
 
