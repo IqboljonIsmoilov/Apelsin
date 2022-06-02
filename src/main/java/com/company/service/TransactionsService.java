@@ -1,7 +1,7 @@
 package com.company.service;
 
 import com.company.dto.request.TransactionsRequestDTO;
-import com.company.dto.response.CardResponseDTO;
+import com.company.dto.response.CardHttpResponseDTO;
 import com.company.dto.response.ProfileResponseDTO;
 import com.company.dto.response.TransactionsResponseDTO;
 import com.company.entity.TransactionsEntity;
@@ -100,7 +100,7 @@ public class TransactionsService {
         TransactionsResponseDTO responseDTO = new TransactionsResponseDTO();
         responseDTO.setId(entity.getT_id());
 
-        CardResponseDTO fromCard = new CardResponseDTO();
+        CardHttpResponseDTO fromCard = new CardHttpResponseDTO();
         fromCard.setId(entity.getFcr_id());
         String fromCardNumber = getCardNumberSkr(entity.getFcr_number());
         fromCard.setNumber(fromCardNumber);
@@ -112,7 +112,7 @@ public class TransactionsService {
 
         fromCard.setProfile(fromProfile);
 
-        CardResponseDTO toCard = new CardResponseDTO();
+        CardHttpResponseDTO toCard = new CardHttpResponseDTO();
         toCard.setId(entity.getTcr_id());
 
         ProfileResponseDTO toProfile = new ProfileResponseDTO();

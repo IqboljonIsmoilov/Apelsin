@@ -3,7 +3,7 @@ package com.company.service;
 import com.company.dto.MerchantDTO;
 import com.company.dto.request.MerchantRequestDTO;
 import com.company.dto.request.MerchantUpdateDetailDTO;
-import com.company.dto.response.CardResponseDTO;
+import com.company.dto.response.CardHttpResponseDTO;
 import com.company.entity.MerchantEntity;
 import com.company.enums.MerchantStatus;
 import com.company.exception.AppBadRequestException;
@@ -40,7 +40,7 @@ public class MerchantService {
         categoryService.get(dto.getCategoryId());
         MerchantEntity entity = new MerchantEntity();
         try {
-            CardResponseDTO cardDTO = restTemplate.getForObject("https://uzcard01.herokuapp.com/card/card/" + dto.getCardNumber(), CardResponseDTO.class);
+            CardHttpResponseDTO cardDTO = restTemplate.getForObject("https://uzcard01.herokuapp.com/card/card/" + dto.getCardNumber(), CardHttpResponseDTO.class);
             if (!dto.getPhone().equals(cardDTO.getPhone())) {
                 log.warn("Not access {}", MerchantService.class);
                 throw new AppForbiddenException("Not access");

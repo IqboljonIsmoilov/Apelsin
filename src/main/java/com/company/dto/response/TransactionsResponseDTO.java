@@ -13,7 +13,7 @@ public class TransactionsResponseDTO extends TransactionsRequestDTO {
     private String id;
     private LocalDateTime createdDate;
     private TranStatus status;
-    private CardResponseDTO fromCard;
-    private CardResponseDTO toCard;
-    private CardResponseDTO cardTranId;
+    private CardHttpResponseDTO fromCard;
+    private CardHttpResponseDTO toCard;
+    private CardHttpResponseDTO cardTranId;
 }

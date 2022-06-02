@@ -4,46 +4,56 @@ import com.company.dto.request.CardRequestDTO;
 import com.company.dto.response.CardResponseDTO;
 import com.company.entity.CardEntity;
 import com.company.enums.CardStatus;
+import com.company.exception.AppBadRequestException;
 import com.company.exception.InsufficientFundsException;
 import com.company.exception.ItemNotFoundException;
 import com.company.repository.CardRepository;
-import lombok.RequiredArgsConstructor;
+import com.company.service.integration.UzcardCardService;
+import com.company.util.DateUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class CardService {
-
-    private final CardRepository cardRepository;
+    @Autowired
+    private CardRepository cardRepository;
+    @Autowired
+    private UzcardCardService uzcardCardService;
+    @Autowired
+    private SmsService smsService;
     private final int min = 1000;
     private final int max = 9999;
 
 
-    public CardResponseDTO create(CardRequestDTO requestDTO) {
+    public CardResponseDTO create(CardRequestDTO requestDTO, String profileId) {
+        CardResponseDTO cardResponseDTO = uzcardCardService.getCardByNumber(requestDTO.getNumber());
+
+        if (!cardResponseDTO.getStatus().equals(CardStatus.ACTIVE)) {
+            throw new AppBadRequestException("Card Not Active");
+        }
+
+        if (!DateUtil.checkExpiredDate(requestDTO.getExpDate(), cardResponseDTO.getExpiryDate())) {
+            throw new AppBadRequestException("Expired date wrong");
+        }
 
         CardEntity entity = new CardEntity();
-        entity.setNumber(getCardNumber());
-        entity.setBalance(requestDTO.getBalance());
-        entity.setProfileId(requestDTO.getProfileId());
+        entity.setName(requestDTO.getName());
+        entity.setNumber(cardResponseDTO.getNumber());
+        entity.setExpiryDate(cardResponseDTO.getExpiryDate());
+        entity.setProfileId(profileId);
+        entity.setStatus(CardStatus.NOT_VERIFIED);
+        entity.setPhone(cardResponseDTO.getPhone());
 
-        LocalDate localDate = LocalDate.now();
-        entity.setExpiryDate(localDate.plusYears(3));
-        if (requestDTO.getBalance() > 0) {
-            entity.setStatus(CardStatus.ACTIVE);
-        } else {
-            entity.setStatus(CardStatus.BLOCK);
-        }
         cardRepository.save(entity);
+        smsService.sendSms(cardResponseDTO.getPhone());
         return toDTO(entity);
     }
-
 
     public CardResponseDTO getById(String id) {
         CardEntity entity = cardRepository.findByIdAndStatus(id, CardStatus.ACTIVE).orElseThrow(() -> {
@@ -53,7 +63,6 @@ public class CardService {
         return toDTO(entity);
     }
 
-
     public CardEntity get(String id) {
         CardEntity entity = cardRepository.findByIdAndStatus(id, CardStatus.ACTIVE).orElseThrow(() -> {
             log.warn("Client id not found");
@@ -61,7 +70,6 @@ public class CardService {
         });
         return entity;
     }
-
 
     public CardEntity get(String id, Long amount) {
         CardEntity entity = cardRepository.findByIdAndStatus(id, CardStatus.ACTIVE).orElseThrow(() -> {
@@ -73,7 +81,6 @@ public class CardService {
         }
         return entity;
     }
-
 
     public CardResponseDTO getByCardNumber(String id) {
         CardEntity entity = cardRepository.findByNumber(id).orElseThrow(() -> {
@@ -92,7 +99,6 @@ public class CardService {
         return dtoList;
     }
 
-
     public List<CardResponseDTO> getByProfile(String cid) {
         List<CardResponseDTO> dtoList = new LinkedList<>();
         cardRepository.findByProfileIdAndStatus(cid, CardStatus.ACTIVE).stream().forEach(entity -> {
@@ -101,7 +107,6 @@ public class CardService {
         return dtoList;
     }
 
-
     public Long getBalance(String number) {
         return cardRepository.getBalance(number).orElseThrow(() -> {
             log.warn("Card number not found");
@@ -109,18 +114,15 @@ public class CardService {
         });
     }
 
-
     public Boolean paymentMinus(Long amount, String cid) {
         int n = cardRepository.paymentMinus(amount, cid);
         return n > 0;
     }
 
-
     public Boolean paymentPlus(Long amount, String cid) {
         int n = cardRepository.paymentPlus(amount, cid);
         return n > 0;
     }
-
 
     public Boolean assignPhone(String phone, String cid) {
         int n = cardRepository.assignPhone(phone, cid);
@@ -132,7 +134,6 @@ public class CardService {
         int n = cardRepository.chengStatus(status, id);
         return n > 0;
     }
-
 
     private String getCardNumber() {
         int a = (int) (Math.random() * (max - min + 1) + min);
@@ -147,7 +148,6 @@ public class CardService {
         return cardNumber;
     }
 
-
     private CardResponseDTO toDTO(CardEntity entity) {
         CardResponseDTO responseDTO = new CardResponseDTO();
         responseDTO.setId(entity.getId());
@@ -155,7 +155,7 @@ public class CardService {
         responseDTO.setCreatedDate(entity.getCreatedDate());
         responseDTO.setStatus(entity.getStatus());
         responseDTO.setExpiryDate(entity.getExpiryDate());
-        responseDTO.setBalance(entity.getBalance());
+        // responseDTO.setBalance(entity.getBalance());
         return responseDTO;
     }
 }

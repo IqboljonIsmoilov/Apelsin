@@ -22,7 +22,6 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-
     @ApiOperation(value = "Create ", notes = "Method: Create Category")
     @PostMapping("")
     public ResponseEntity<?> create(@RequestBody @Valid CategoryRequestDTO requestDTO, HttpServletRequest request) {
