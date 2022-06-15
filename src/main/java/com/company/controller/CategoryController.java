@@ -24,7 +24,8 @@ public class CategoryController {
 
     @ApiOperation(value = "Create ", notes = "Method: Create Category")
     @PostMapping("")
-    public ResponseEntity<?> create(@RequestBody @Valid CategoryRequestDTO requestDTO, HttpServletRequest request) {
+    public ResponseEntity<?> create(@RequestBody @Valid CategoryRequestDTO requestDTO,
+                                    HttpServletRequest request) {
         log.info("Create: {}", requestDTO);
         JwtUtil.getIdFromHeader(request);
         return ResponseEntity.ok(categoryService.create(requestDTO));
@@ -49,7 +50,8 @@ public class CategoryController {
 
     @ApiOperation(value = "Delete by id", notes = "Method: Delete by Category id")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") String id, HttpServletRequest request) {
+    public ResponseEntity<?> delete(@PathVariable("id") String id,
+                                    HttpServletRequest request) {
         log.info("Delete by id: {}", id);
         JwtUtil.getIdFromHeader(request);
         return ResponseEntity.ok(categoryService.delete(id));

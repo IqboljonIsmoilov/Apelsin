@@ -25,7 +25,8 @@ public class CardController {
 
     @ApiOperation(value = "Create ", notes = "Method Create Card")
     @PostMapping("")
-    public ResponseEntity<?> create(@RequestBody @Valid CardRequestDTO requestDTO, HttpServletRequest request) {
+    public ResponseEntity<?> create(@RequestBody @Valid CardRequestDTO requestDTO,
+                                    HttpServletRequest request) {
         log.info("Create: {}", requestDTO);
         String profileId = JwtUtil.getIdFromHeader(request);
         return ResponseEntity.ok(cardService.create(requestDTO,profileId));
@@ -82,7 +83,7 @@ public class CardController {
     @PutMapping("/assignPhone/{id}")
     public ResponseEntity<?> assignPhone(@PathVariable("id") String id,
                                          @RequestBody @Valid CardAssignRequestDTO requestDTO) {
-        log.info("Assign phone: {},{}", requestDTO, id);
+        log.info("Assign phone: {}{}", requestDTO, id);
         return ResponseEntity.ok(cardService.assignPhone(requestDTO.getPhone(), id));
     }
 
